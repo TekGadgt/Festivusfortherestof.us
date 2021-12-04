@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Festivus Checker</title>
+    <meta name="author" content="Ryan McGovern" />
+    <meta name="description" content="A website and API combo for checking whether or not today is Festivus." />
+    <meta name="keywords" content="festivus,seinfeld" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="index.css" type="text/css" />
+  </head>
+  <body>
+    <div class="container-fluid h-100 d-flex flex-column justify-content-center align-items-center">
+      <div class="d-flex justify-content-center align-items-center">
+        <img id="jerryMood1" />
+        <h1 id="festivusTitle"></h1>
+        <img id="jerryMood2" />
+      </div>
+      <img id="festivusPole" src="resources/Festivus_Pole.jpg" />
+      <h1 id="festivusCountdownText"></h1>
+    </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"
+      integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data.min.js"
+      integrity="sha512-HZcf3uHWA+Y2P5KNv+F/xa87/flKVP92kUTe/KXjU8URPshczF1Dx+cL5bw0VBGhmqWAK0UbhcqxBbyiNtAnWQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var timeElement, eventTimeStart, currentTime, duration, interval, intervalId, isFestivus, tzid, requestUrl
+      tzid = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      requestUrl = `https://api.festivusfortherestof.us/${encodeURIComponent(tzid)}`
+      console.log(requestUrl)
+      fetch(requestUrl)
+        .then(function (response) {
+          return response.json()
+        })
+        .then(function (data) {
+          isFestivus = data.isFestivus
+
+          document.getElementById('festivusTitle').innerHTML = isFestivus
+            ? `Celebrate, it's Festivus!`
+            : `Aw shucks, it's not quite Festivus.`
+          document.getElementById('jerryMood1').src = isFestivus
+            ? `resources/jerryhappy.png`
+            : `resources/jerryupset.png`
+          document.getElementById('jerryMood2').src = isFestivus
+            ? `resources/jerryhappy.png`
+            : `resources/jerryupset.png`
+
+          interval = 1000
+          timeElement = document.getElementById('festivusCountdownText')
+          currentTime = moment(data.currentDateTime).tz(tzid)
+          eventTimeStart = moment(data.festivusDateTimeStart).tz(tzid)
+          duration = moment.duration(eventTimeStart.diff(currentTime))
+          if (isFestivus) {
+            timeElement.innerHTML = `Festivus Party Time!`
+          } else {
+            setInterval(function () {
+              duration = moment.duration(duration - interval, 'milliseconds')
+              timeElement.innerText =
+                duration.months() +
+                ' months ' +
+                duration.days() +
+                ' days ' +
+                duration.hours() +
+                ' hours ' +
+                duration.minutes() +
+                ' minutes ' +
+                duration.seconds() +
+                ' seconds until Festivus!'
+            }, interval)
+          }
+        })
+    </script>
+  </body>
+</html>
